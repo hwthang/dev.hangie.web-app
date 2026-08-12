@@ -48,7 +48,7 @@ const Sidebar = () => {
   const router = useRouter();
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
-    localStorage.removeItem("hangieUse");
+    localStorage.removeItem("hangieUser");
     router.replace("/");
   };
 
