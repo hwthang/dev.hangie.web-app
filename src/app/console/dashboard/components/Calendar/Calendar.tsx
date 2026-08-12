@@ -56,7 +56,7 @@ const Calendar = ({
           <SessionForm
             data={{
               date: selectedDate.toISOString(),
-              isAttended: true,
+              isAttended: false,
               familyId: "",
             }}
             onSuccess={handleClose}

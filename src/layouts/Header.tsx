@@ -2,10 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Bell, ChevronDown, User, KeyRound, LogOut } from "lucide-react";
+import { useAuth } from "@/features/auth/auth.provider";
 
 const Header = () => {
   const [open, setOpen] = useState(false);
   const userMenuRef = useRef<HTMLDivElement>(null);
+
+  const { user } = useAuth();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -31,7 +34,7 @@ const Header = () => {
 
       {/* Right */}
       <div className="flex items-center gap-3">
-        {/* Notification */}
+        {/* Notification
         <button
           type="button"
           className="relative flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
@@ -40,7 +43,7 @@ const Header = () => {
           <Bell size={20} strokeWidth={2} />
 
           <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
-        </button>
+        </button> */}
 
         {/* User menu */}
         <div ref={userMenuRef} className="relative">
@@ -56,7 +59,7 @@ const Header = () => {
 
             {/* Name */}
             <span className="text-sm font-medium text-slate-700">
-              Dang Huu Thang
+              {user?.username}
             </span>
 
             <ChevronDown

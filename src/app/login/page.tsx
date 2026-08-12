@@ -1,13 +1,7 @@
-
 "use client";
 
 import LoginForm from "@/features/auth/components/LoginForm";
-import {
-  CalendarDays,
-  CheckCircle2,
-  Clock3,
-  Info,
-} from "lucide-react";
+import { CalendarDays, CheckCircle2, Clock3, Info } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 
@@ -46,14 +40,12 @@ const Login = () => {
               <h1 className="mt-3 text-4xl font-bold leading-tight tracking-tight text-slate-900 xl:text-5xl">
                 Quản lý việc dạy
                 <br />
-                <span className="text-blue-600">
-                  đơn giản hơn.
-                </span>
+                <span className="text-blue-600">đơn giản hơn.</span>
               </h1>
 
               <p className="mt-6 max-w-md text-base leading-7 text-slate-500">
-                Theo dõi lịch dạy, chấm công và thu nhập của bạn
-                trên một nền tảng duy nhất.
+                Theo dõi lịch dạy, chấm công và thu nhập của bạn trên một nền
+                tảng duy nhất.
               </p>
 
               {/* Features */}
@@ -94,6 +86,7 @@ const Login = () => {
               </div>
 
               {/* Login card */}
+              {/* Login card */}
               <div className="rounded-2xl border border-slate-200/80 bg-white/90 p-7 shadow-xl shadow-slate-200/50 backdrop-blur-xl sm:p-9">
                 <div className="mb-7">
                   {/* Title + Demo account */}
@@ -101,48 +94,6 @@ const Login = () => {
                     <h2 className="text-2xl font-bold tracking-tight text-slate-900">
                       Đăng nhập
                     </h2>
-
-                    {/* Demo account tooltip */}
-                    <div className="group relative">
-                      <button
-                        type="button"
-                        aria-label="Tài khoản thử nghiệm"
-                        className="flex h-5 w-5 items-center justify-center rounded-full text-slate-400 transition-colors hover:bg-blue-50 hover:text-blue-600"
-                      >
-                        <Info size={15} strokeWidth={2} />
-                      </button>
-
-                      <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-3 w-64 -translate-x-1/2 rounded-xl border border-slate-200 bg-white p-4 opacity-0 shadow-xl transition-all duration-200 group-hover:pointer-events-auto group-hover:opacity-100">
-                        <p className="text-xs font-semibold text-slate-900">
-                          Tài khoản thử nghiệm
-                        </p>
-
-                        <div className="mt-3 space-y-2 text-xs">
-                          <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
-                            <span className="text-slate-500">
-                              Email
-                            </span>
-
-                            <span className="font-medium text-slate-700">
-                              thang@example.com
-                            </span>
-                          </div>
-
-                          <div className="flex items-center justify-between rounded-lg bg-slate-50 px-3 py-2">
-                            <span className="text-slate-500">
-                              Password
-                            </span>
-
-                            <span className="font-medium text-slate-700">
-                              Dht@2510
-                            </span>
-                          </div>
-                        </div>
-
-                        {/* Tooltip arrow */}
-                        <div className="absolute left-1/2 top-full -translate-x-1/2 border-x-8 border-t-8 border-x-transparent border-t-white" />
-                      </div>
-                    </div>
                   </div>
 
                   <p className="mt-2 text-sm text-slate-500">
@@ -151,6 +102,19 @@ const Login = () => {
                 </div>
 
                 <LoginForm />
+
+                {/* Register */}
+                <div className="mt-6 border-t border-slate-100 pt-6 text-center">
+                  <p className="text-sm text-slate-500">
+                    Chưa có tài khoản?{" "}
+                    <Link
+                      href="/register"
+                      className="font-semibold text-blue-600 transition-colors hover:text-blue-700 hover:underline"
+                    >
+                      Đăng ký ngay
+                    </Link>
+                  </p>
+                </div>
               </div>
 
               <p className="mt-6 text-center text-xs text-slate-400">
@@ -180,17 +144,12 @@ const Feature = ({
       </div>
 
       <div>
-        <p className="text-sm font-semibold text-slate-800">
-          {title}
-        </p>
+        <p className="text-sm font-semibold text-slate-800">{title}</p>
 
-        <p className="mt-0.5 text-xs text-slate-400">
-          {description}
-        </p>
+        <p className="mt-0.5 text-xs text-slate-400">{description}</p>
       </div>
     </div>
   );
 };
 
 export default Login;
-

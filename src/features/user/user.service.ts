@@ -5,6 +5,13 @@ export interface User {
   name: string;
 }
 
+export interface CreateUserDto {
+  username: string;
+  phone: string;
+  email: string;
+  password: string;
+}
+
 export const userService = {
   getUsers: async () => {
     const { data } = await api.get<User[]>("/users");
@@ -16,7 +23,7 @@ export const userService = {
     return data;
   },
 
-  createUser: async (body: { name: string }) => {
+  createUser: async (body: CreateUserDto) => {
     const { data } = await api.post<User>("/users", body);
     return data;
   },

@@ -5,7 +5,7 @@ import { createContext } from "react";
 export interface User {
   id?: string;
   avatar: string;
-  fullName: string;
+  username: string;
 }
 export interface AuthContextType {
   user: User | null;
