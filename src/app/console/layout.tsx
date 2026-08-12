@@ -1,4 +1,5 @@
 "use client";
+
 import Header from "@/layouts/Header";
 import Sidebar from "@/layouts/Sidebar";
 import { useRouter } from "next/navigation";
@@ -16,17 +17,21 @@ const ConsoleLayout = ({ children }: Props) => {
 
     if (!accessToken) {
       router.replace("/");
-      return;
     }
   }, [router]);
+
   return (
-    <div className="relative flex min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-slate-50">
+      {/* Floating menu */}
       <Sidebar />
+
       {/* Main */}
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-screen flex-col">
         <Header />
 
-        <main className="flex-1 p-6">{children}</main>
+        <main className="flex-1 p-6">
+          {children}
+        </main>
       </div>
     </div>
   );

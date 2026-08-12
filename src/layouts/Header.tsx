@@ -1,14 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Bell, ChevronDown, User, KeyRound, LogOut } from "lucide-react";
+import { ChevronDown, User, KeyRound, LogOut } from "lucide-react";
 import { useAuth } from "@/features/auth/auth.provider";
+import { useRouter } from "next/navigation";
 
 const Header = () => {
   const [open, setOpen] = useState(false);
+
   const userMenuRef = useRef<HTMLDivElement>(null);
 
   const { user } = useAuth();
+
+  const router = useRouter();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -27,80 +31,230 @@ const Header = () => {
     };
   }, []);
 
-  return (
-    <header className="flex h-16 items-center justify-between border-b border-slate-200 bg-white px-6">
-      {/* Logo */}
-      <div className="text-xl font-bold text-slate-900">Hangie</div>
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("hangieUser");
 
-      {/* Right */}
+    router.replace("/");
+  };
+
+  const username = user?.username ?? "Người dùng";
+
+  const initials = username.slice(0, 2).toUpperCase();
+
+  return (
+    <header
+      className="
+        sticky
+        top-0
+        z-30
+        flex
+        h-16
+        shrink-0
+        items-center
+        justify-between
+        border-b
+        border-slate-200
+        bg-white/95
+        px-5
+        pl-20
+        backdrop-blur
+        sm:px-6
+        sm:pl-20
+      "
+    >
+      {/* =====================================
+          BRAND
+      ===================================== */}
       <div className="flex items-center gap-3">
-        {/* Notification
+        <div
+          className="
+            hidden
+            h-8
+            w-px
+            bg-slate-200
+            sm:block
+          "
+        />
+
+        <div>
+          <h1 className="text-base font-bold tracking-tight text-slate-900">
+            Hangie
+          </h1>
+
+          <p className="hidden text-[11px] text-slate-400 sm:block">
+            Teaching Manager
+          </p>
+        </div>
+      </div>
+
+      {/* =====================================
+          USER
+      ===================================== */}
+      <div ref={userMenuRef} className="relative">
         <button
           type="button"
-          className="relative flex h-10 w-10 items-center justify-center rounded-lg text-slate-500 transition hover:bg-slate-100 hover:text-slate-900"
-          title="Thông báo"
+          onClick={() => setOpen((prev) => !prev)}
+          className="
+            flex
+            items-center
+            gap-2
+            rounded-xl
+            p-1.5
+            transition-all
+            duration-200
+            hover:bg-slate-50
+            active:scale-[0.98]
+          "
         >
-          <Bell size={20} strokeWidth={2} />
-
-          <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-red-500" />
-        </button> */}
-
-        {/* User menu */}
-        <div ref={userMenuRef} className="relative">
-          <button
-            type="button"
-            onClick={() => setOpen((prev) => !prev)}
-            className="flex items-center gap-2 rounded-lg p-1.5 transition hover:bg-slate-100"
+          {/* Avatar */}
+          <div
+            className="
+              flex
+              h-9
+              w-9
+              items-center
+              justify-center
+              rounded-full
+              bg-blue-50
+              text-xs
+              font-bold
+              text-blue-600
+              ring-1
+              ring-blue-100
+            "
           >
-            {/* Avatar */}
-            <div className="flex h-9 w-9 items-center justify-center overflow-hidden rounded-full bg-slate-200 text-sm font-semibold text-slate-600">
-              DH
+            {initials}
+          </div>
+
+          {/* User info */}
+          <div className="hidden text-left sm:block">
+            <p className="max-w-32 truncate text-sm font-semibold text-slate-700">
+              {username}
+            </p>
+
+            <p className="text-[11px] text-slate-400">Tài khoản</p>
+          </div>
+
+          <ChevronDown
+            size={16}
+            strokeWidth={2}
+            className={`
+              text-slate-400
+              transition-transform
+              duration-200
+              ${open ? "rotate-180" : ""}
+            `}
+          />
+        </button>
+
+        {/* =====================================
+            DROPDOWN
+        ===================================== */}
+        {open && (
+          <div
+            className="
+              absolute
+              right-0
+              top-full
+              z-50
+              mt-2
+              w-60
+              overflow-hidden
+              rounded-2xl
+              border
+              border-slate-200
+              bg-white
+              p-1.5
+              shadow-xl
+              shadow-slate-200/70
+            "
+          >
+            {/* User info */}
+            <div className="mb-1 flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-3">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-100 text-xs font-bold text-blue-600">
+                {initials}
+              </div>
+
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-slate-800">
+                  {username}
+                </p>
+              </div>
             </div>
 
-            {/* Name */}
-            <span className="text-sm font-medium text-slate-700">
-              {user?.username}
-            </span>
+            {/* Profile */}
+            <button
+              type="button"
+              className="
+                flex
+                w-full
+                items-center
+                gap-3
+                rounded-xl
+                px-3
+                py-2.5
+                text-sm
+                text-slate-600
+                transition
+                hover:bg-slate-50
+                hover:text-slate-900
+              "
+            >
+              <User size={18} strokeWidth={2} />
 
-            <ChevronDown
-              size={16}
-              className={`text-slate-400 transition-transform ${
-                open ? "rotate-180" : ""
-              }`}
-            />
-          </button>
+              <span>Thông tin cá nhân</span>
+            </button>
 
-          {/* Dropdown */}
-          {open && (
-            <div className="absolute right-0 top-full z-50 mt-2 w-56 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg">
-              <button
-                type="button"
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-              >
-                <User size={18} strokeWidth={2} />
-                <span>Thông tin cá nhân</span>
-              </button>
+            {/* Password */}
+            <button
+              type="button"
+              className="
+                flex
+                w-full
+                items-center
+                gap-3
+                rounded-xl
+                px-3
+                py-2.5
+                text-sm
+                text-slate-600
+                transition
+                hover:bg-slate-50
+                hover:text-slate-900
+              "
+            >
+              <KeyRound size={18} strokeWidth={2} />
 
-              <button
-                type="button"
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-slate-600 transition hover:bg-slate-100 hover:text-slate-900"
-              >
-                <KeyRound size={18} strokeWidth={2} />
-                <span>Đổi mật khẩu</span>
-              </button>
+              <span>Đổi mật khẩu</span>
+            </button>
 
-              <div className="my-1 border-t border-slate-100" />
+            <div className="my-1 border-t border-slate-100" />
 
-              <button
-                type="button"
-                className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-red-600 transition hover:bg-red-50"
-              >
-                <LogOut size={18} strokeWidth={2} />
-                <span>Đăng xuất</span>
-              </button>
-            </div>
-          )}
-        </div>
+            {/* Logout */}
+            <button
+              type="button"
+              onClick={handleLogout}
+              className="
+                flex
+                w-full
+                items-center
+                gap-3
+                rounded-xl
+                px-3
+                py-2.5
+                text-sm
+                text-red-600
+                transition
+                hover:bg-red-50
+              "
+            >
+              <LogOut size={18} strokeWidth={2} />
+
+              <span>Đăng xuất</span>
+            </button>
+          </div>
+        )}
       </div>
     </header>
   );

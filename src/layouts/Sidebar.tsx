@@ -2,15 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Users,
-  Settings,
   LogOut,
   Menu,
-  ChevronLeft,
   Calendar,
+  X,
 } from "lucide-react";
 
 type NavigationItem = {
@@ -35,131 +34,286 @@ const navigationItems: NavigationItem[] = [
     href: "/console/sessions",
     icon: Calendar,
   },
-  // {
-  //   label: "Cài đặt",
-  //   href: "/console/settings",
-  //   icon: Settings,
-  // },
 ];
 
 const Sidebar = () => {
   const pathname = usePathname();
-  const [collapsed, setCollapsed] = useState(false);
   const router = useRouter();
+
+  const [open, setOpen] = useState(false);
+
+  // Đóng menu khi chuyển trang
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  // Khóa scroll khi menu mở
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  // ESC để đóng
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem("accessToken");
     localStorage.removeItem("hangieUser");
+
+    setOpen(false);
     router.replace("/");
   };
 
   return (
-    <aside
-      className={`flex sticky top-0 h-screen flex-col overflow-hidden border-r border-slate-200 bg-white transition-[width] duration-300 ease-in-out ${
-        collapsed ? "w-16" : "w-64"
-      }`}
-    >
-      {/* Header */}
-      <div className="flex h-16 shrink-0 items-center border-b border-slate-200">
-        <div
-          className={`flex w-full items-center transition-all duration-300 ${
-            collapsed ? "justify-center" : "justify-between px-4"
-          }`}
+    <>
+      {/* =========================================
+          MENU BUTTON
+      ========================================= */}
+      {!open && (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          aria-label="Mở menu"
+          className="
+            fixed
+            left-4
+            top-8
+            z-[60]
+            flex
+            h-10
+            w-10
+            -translate-y-1/2
+            items-center
+            justify-center
+            rounded-xl
+            border
+            border-slate-200
+            bg-white
+            text-slate-500
+            shadow-sm
+            transition-all
+            duration-200
+            hover:border-blue-200
+            hover:bg-blue-50
+            hover:text-blue-600
+            hover:shadow-md
+            active:scale-95
+          "
         >
-          {/* Toggle */}
+          <Menu size={20} strokeWidth={2} />
+        </button>
+      )}
+
+      {/* =========================================
+          OVERLAY
+      ========================================= */}
+      <div
+        onClick={() => setOpen(false)}
+        className={`
+          fixed
+          inset-0
+          z-40
+          bg-slate-900/20
+          backdrop-blur-[3px]
+          transition-all
+          duration-300
+          ${
+            open
+              ? "pointer-events-auto opacity-100"
+              : "pointer-events-none opacity-0"
+          }
+        `}
+      />
+
+      {/* =========================================
+          SIDEBAR
+      ========================================= */}
+      <aside
+        className={`
+          fixed
+          left-0
+          top-0
+          z-50
+          flex
+          h-screen
+          w-72
+          flex-col
+          border-r
+          border-slate-200
+          bg-white
+          shadow-2xl
+          transition-transform
+          duration-300
+          ease-out
+          ${
+            open
+              ? "translate-x-0"
+              : "-translate-x-full"
+          }
+        `}
+      >
+        {/* Header sidebar */}
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100 px-4">
+          {/* Logo */}
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-600 text-sm font-bold text-white shadow-sm shadow-blue-600/20">
+              H
+            </div>
+
+            <div>
+              <p className="text-sm font-bold tracking-tight text-slate-900">
+                Hangie
+              </p>
+
+              <p className="text-[11px] text-slate-400">
+                Teaching Manager
+              </p>
+            </div>
+          </div>
+
+          {/* Close */}
           <button
             type="button"
-            onClick={() => setCollapsed((prev) => !prev)}
-            title={collapsed ? "Mở rộng" : "Thu gọn"}
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-slate-500 transition-all duration-200 hover:bg-slate-100 hover:text-slate-900 active:scale-95"
+            onClick={() => setOpen(false)}
+            aria-label="Đóng menu"
+            className="
+              flex
+              h-9
+              w-9
+              items-center
+              justify-center
+              rounded-lg
+              text-slate-400
+              transition
+              hover:bg-slate-100
+              hover:text-slate-700
+              active:scale-95
+            "
           >
-            <span
-              className={`transition-transform duration-300 ease-in-out ${
-                collapsed ? "rotate-180" : "rotate-0"
-              }`}
-            >
-              <ChevronLeft size={20} strokeWidth={2} />
-            </span>
+            <X size={19} strokeWidth={2} />
           </button>
         </div>
-      </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-2">
-        <ul className="space-y-2">
-          {navigationItems.map((item) => {
-            const Icon = item.icon;
+        {/* Navigation */}
+        <nav className="flex-1 px-3 py-5">
+          <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[0.12em] text-slate-400">
+            Điều hướng
+          </p>
 
-            const isActive =
-              item.href === "/console"
-                ? pathname === "/console"
-                : pathname === item.href ||
-                  pathname.startsWith(`${item.href}/`);
+          <ul className="space-y-1">
+            {navigationItems.map((item) => {
+              const Icon = item.icon;
 
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  title={collapsed ? item.label : undefined}
-                  className={`group flex h-11 w-full items-center rounded-lg transition-all duration-200 ${
-                    collapsed ? "justify-center" : "justify-start gap-3 px-3"
-                  } ${
-                    isActive
-                      ? "bg-blue-50 text-blue-600"
-                      : "text-slate-500 hover:bg-slate-100 hover:text-slate-900"
-                  }`}
-                >
-                  {/* Icon */}
-                  <Icon
-                    size={21}
-                    strokeWidth={2}
-                    className="shrink-0 transition-transform duration-200 group-hover:scale-105"
-                  />
+              const isActive =
+                pathname === item.href ||
+                pathname.startsWith(`${item.href}/`);
 
-                  {/* Label */}
-                  <span
-                    className={`overflow-hidden whitespace-nowrap text-sm font-medium transition-all duration-800 ${
-                      collapsed
-                        ? "w-0 translate-x-[-8px] opacity-0"
-                        : "w-auto translate-x-0 opacity-100"
-                    }`}
+              return (
+                <li key={item.href}>
+                  <Link
+                    href={item.href}
+                    onClick={() => setOpen(false)}
+                    className={`
+                      group
+                      flex
+                      h-11
+                      w-full
+                      items-center
+                      gap-3
+                      rounded-xl
+                      px-3
+                      text-sm
+                      font-medium
+                      transition-all
+                      duration-200
+                      ${
+                        isActive
+                          ? "bg-blue-50 text-blue-600"
+                          : "text-slate-500 hover:bg-slate-50 hover:text-slate-900"
+                      }
+                    `}
                   >
-                    {item.label}
-                  </span>
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
+                    <span
+                      className={`
+                        flex
+                        h-8
+                        w-8
+                        items-center
+                        justify-center
+                        rounded-lg
+                        transition
+                        ${
+                          isActive
+                            ? "bg-blue-100 text-blue-600"
+                            : "text-slate-400 group-hover:text-slate-700"
+                        }
+                      `}
+                    >
+                      <Icon
+                        size={18}
+                        strokeWidth={2}
+                      />
+                    </span>
 
-      {/* Logout */}
-      <div className="shrink-0 border-t border-slate-200 p-2">
-        <button
-          onClick={handleLogout}
-          type="button"
-          title={collapsed ? "Đăng xuất" : undefined}
-          className={`group flex h-11 w-full items-center rounded-lg text-sm font-medium text-slate-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 active:scale-[0.98] ${
-            collapsed ? "justify-center" : "justify-start gap-3 px-3"
-          }`}
-        >
-          <LogOut
-            size={21}
-            strokeWidth={2}
-            className="shrink-0 transition-transform duration-200 group-hover:translate-x-0.5"
-          />
+                    <span>{item.label}</span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </nav>
 
-          <span
-            className={`overflow-hidden whitespace-nowrap transition-all duration-300 ${
-              collapsed
-                ? "w-0 translate-x-[-8px] opacity-0"
-                : "w-auto translate-x-0 opacity-100"
-            }`}
+        {/* Footer */}
+        <div className="border-t border-slate-100 p-3">
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="
+              group
+              flex
+              h-11
+              w-full
+              items-center
+              gap-3
+              rounded-xl
+              px-3
+              text-sm
+              font-medium
+              text-slate-500
+              transition-all
+              hover:bg-red-50
+              hover:text-red-600
+              active:scale-[0.98]
+            "
           >
-            Đăng xuất
-          </span>
-        </button>
-      </div>
-    </aside>
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg">
+              <LogOut
+                size={18}
+                strokeWidth={2}
+                className="transition-transform group-hover:translate-x-0.5"
+              />
+            </span>
+
+            <span>Đăng xuất</span>
+          </button>
+        </div>
+      </aside>
+    </>
   );
 };
 
