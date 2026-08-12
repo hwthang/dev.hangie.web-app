@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import {
   LayoutDashboard,
@@ -35,16 +35,22 @@ const navigationItems: NavigationItem[] = [
     href: "/console/sessions",
     icon: Calendar,
   },
-  {
-    label: "Cài đặt",
-    href: "/console/settings",
-    icon: Settings,
-  },
+  // {
+  //   label: "Cài đặt",
+  //   href: "/console/settings",
+  //   icon: Settings,
+  // },
 ];
 
 const Sidebar = () => {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+  const router = useRouter();
+  const handleLogout = () => {
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("hangieUse");
+    router.replace("/");
+  };
 
   return (
     <aside
@@ -129,6 +135,7 @@ const Sidebar = () => {
       {/* Logout */}
       <div className="shrink-0 border-t border-slate-200 p-2">
         <button
+          onClick={handleLogout}
           type="button"
           title={collapsed ? "Đăng xuất" : undefined}
           className={`group flex h-11 w-full items-center rounded-lg text-sm font-medium text-slate-500 transition-all duration-200 hover:bg-red-50 hover:text-red-600 active:scale-[0.98] ${
