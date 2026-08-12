@@ -61,24 +61,7 @@ const FamilyStatisticsTable = ({
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Add family */}
-          <button
-            type="button"
-            onClick={onAdd}
-            className="
-              flex h-10 items-center gap-2
-              rounded-lg
-              bg-blue-600
-              px-3
-              text-sm font-medium
-              text-white
-              transition-colors
-              hover:bg-blue-700
-            "
-          >
-            <Plus size={17} />
-            Thêm gia đình
-          </button>
+        
 
           <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
             <Users size={20} />
