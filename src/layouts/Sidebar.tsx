@@ -93,7 +93,7 @@ const Sidebar = () => {
             fixed
             left-4
             top-8
-            z-[60]
+            z-[40]
             flex
             h-10
             w-10
