@@ -15,10 +15,15 @@ const formatCurrency = (value: number) => {
 };
 
 const formatDate = (value: string) => {
-  return new Date(value).toLocaleString("vi-VN", {
-    dateStyle: "short",
-    timeStyle: "short",
-  });
+  const date = new Date(value);
+
+  return {
+    weekday: date.toLocaleDateString("vi-VN", { weekday: "long" }), // Thứ Bảy
+    dateTime: date.toLocaleString("vi-VN", {
+      dateStyle: "short",
+      timeStyle: "short",
+    }),
+  };
 };
 
 const SessionItem = ({
@@ -27,6 +32,8 @@ const SessionItem = ({
   onEdit,
   onDelete,
 }: Props) => {
+  const { weekday, dateTime } = formatDate(session.date);
+
   return (
     <tr className="transition-colors hover:bg-slate-50">
       {/* Family */}
@@ -46,7 +53,8 @@ const SessionItem = ({
 
       {/* Date */}
       <td className="px-5 py-4 text-sm text-slate-600">
-        {formatDate(session.date)}
+        <span className="font-medium text-slate-800">{weekday}</span>
+        <span className="ml-2 text-slate-500">{dateTime}</span>
       </td>
 
       {/* Status */}
