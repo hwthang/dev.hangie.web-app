@@ -1,345 +1,223 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
-import {
-  Calendar,
-  StatisticsCards,
-} from "./components";
-
+import { Calendar, StatisticsCards } from "./components";
 import FamilyStatisticsTable from "./components/FamilyStatisticsTable";
 
 import { useFamilies } from "@/features/family/use-families";
 import { useSessions } from "@/features/session/hooks/use-sessions";
 
-import {
-  CalendarSessions,
-  CalendarDay,
-} from "./types/calendar";
+import { CalendarSessions, CalendarDay } from "./types/calendar";
 
 const Dashboard = () => {
   const [page] = useState(1);
   const pageSize = 100;
 
-  const {
-    data: sessionsResponse,
-    isLoading: isSessionsLoading,
-  } = useSessions(page, pageSize);
+  const { data: sessionsResponse, isLoading: isSessionsLoading } =
+    useSessions(page, pageSize);
 
-  const {
-    data: familiesResponse,
-    isLoading: isFamiliesLoading,
-  } = useFamilies(page, pageSize);
+  const { data: familiesResponse, isLoading: isFamiliesLoading } =
+    useFamilies(page, pageSize);
 
   const sessions = sessionsResponse?.data ?? [];
   const families = familiesResponse?.data ?? [];
 
   /**
-   * =========================
-   * Current month
-   * =========================
+   * Hôm nay (để highlight trong lịch) – không đổi
    */
-  const today = new Date();
-
-  const currentMonth = today.getMonth();
-  const currentYear = today.getFullYear();
+  const today = useMemo(() => new Date(), []);
 
   /**
-   * =========================
-   * Sessions trong tháng hiện tại
-   * =========================
+   * Tháng đang xem (luôn là ngày 1 của tháng)
+   */
+  const [viewDate, setViewDate] = useState(
+    () => new Date(today.getFullYear(), today.getMonth(), 1),
+  );
+
+  const currentMonth = viewDate.getMonth();
+  const currentYear = viewDate.getFullYear();
+
+  const goPrevMonth = () =>
+    setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+
+  const goNextMonth = () =>
+    setViewDate((prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+
+  const goToday = () =>
+    setViewDate(new Date(today.getFullYear(), today.getMonth(), 1));
+
+  const isViewingCurrentMonth =
+    currentMonth === today.getMonth() && currentYear === today.getFullYear();
+
+  /**
+   * Sessions của tháng đang xem (filter ở frontend)
    */
   const monthlySessions = useMemo(() => {
     return sessions.filter((session) => {
       const date = new Date(session.date);
-
       return (
-        date.getMonth() === currentMonth &&
-        date.getFullYear() === currentYear
+        date.getMonth() === currentMonth && date.getFullYear() === currentYear
       );
     });
   }, [sessions, currentMonth, currentYear]);
 
   /**
-   * =========================
    * Statistics Cards
-   * =========================
    */
   const statistics = useMemo(() => {
-    const taughtSessions =
-      monthlySessions.filter(
-        (session) => session.isAttended,
-      ).length;
-
-    const absentSessions =
-      monthlySessions.filter(
-        (session) => !session.isAttended,
-      ).length;
-
-    const expectedSalary =
-      monthlySessions
-        .filter(
-          (session) => session.isAttended,
-        )
-        .reduce(
-          (total, session) =>
-            total + session.amount,
-          0,
-        );
+    const attended = monthlySessions.filter((s) => s.isAttended);
 
     return {
-      taughtSessions,
-      absentSessions,
-      expectedSalary,
+      taughtSessions: attended.length,
+      absentSessions: monthlySessions.length - attended.length,
+      expectedSalary: attended.reduce((total, s) => total + s.amount, 0),
     };
   }, [monthlySessions]);
 
   /**
-   * =========================
    * Family Statistics
-   * =========================
    */
   const familyStatistics = useMemo(() => {
     return families.map((family) => {
-      const familySessions =
-        monthlySessions.filter(
-          (session) =>
-            session.familyId === family.id,
-        );
-
-      const taughtSessions =
-        familySessions.filter(
-          (session) => session.isAttended,
-        ).length;
-
-      const absentSessions =
-        familySessions.filter(
-          (session) => !session.isAttended,
-        ).length;
-
-      const expectedSalary =
-        familySessions
-          .filter(
-            (session) => session.isAttended,
-          )
-          .reduce(
-            (total, session) =>
-              total + session.amount,
-            0,
-          );
+      const familySessions = monthlySessions.filter(
+        (session) => session.familyId === family.id,
+      );
+      const attended = familySessions.filter((s) => s.isAttended);
 
       return {
         id: family.id,
         familyName: family.name,
         sessionRate: family.sessionRate,
-        taughtSessions,
-        absentSessions,
-        expectedSalary,
+        taughtSessions: attended.length,
+        absentSessions: familySessions.length - attended.length,
+        expectedSalary: attended.reduce((total, s) => total + s.amount, 0),
       };
     });
   }, [families, monthlySessions]);
 
   /**
-   * =========================
    * Calendar Sessions
-   * =========================
-   *
-   * API Session
-   *      ↓
-   * CalendarSessions
+   * (giữ toàn bộ sessions để các ô của tháng trước/sau cũng hiển thị buổi học)
    */
-  const calendarSessions =
-    useMemo<CalendarSessions>(() => {
-      return sessions.reduce(
-        (result, session) => {
-          const date = new Date(
-            session.date,
-          );
+  const calendarSessions = useMemo<CalendarSessions>(() => {
+    return sessions.reduce((result, session) => {
+      const date = new Date(session.date);
 
-          const dateKey =
-            `${date.getFullYear()}-${String(
-              date.getMonth() + 1,
-            ).padStart(2, "0")}-${String(
-              date.getDate(),
-            ).padStart(2, "0")}`;
+      const dateKey = `${date.getFullYear()}-${String(
+        date.getMonth() + 1,
+      ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
-          if (!result[dateKey]) {
-            result[dateKey] = [];
-          }
+      if (!result[dateKey]) {
+        result[dateKey] = [];
+      }
 
-          result[dateKey].push({
-            id: session.id,
-            family: session.family.name,
-            startTime:
-              date.toLocaleTimeString(
-                "vi-VN",
-                {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                },
-              ),
-            status: session.isAttended
-              ? "taught"
-              : "absent",
-          });
+      result[dateKey].push({
+        id: session.id,
+        family: session.family.name,
+        startTime: date.toLocaleTimeString("vi-VN", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        status: session.isAttended ? "taught" : "absent",
+      });
 
-          return result;
-        },
-        {} as CalendarSessions,
-      );
-    }, [sessions]);
+      return result;
+    }, {} as CalendarSessions);
+  }, [sessions]);
 
   /**
-   * =========================
-   * Calendar Days
-   * =========================
-   *
-   * Tạo calendar của tháng hiện tại.
-   *
-   * Calendar gồm:
-   * - ngày cuối tháng trước
-   * - ngày tháng hiện tại
-   * - ngày đầu tháng sau
-   *
-   * Tổng cộng 42 ô.
+   * Calendar Days (42 ô) theo tháng đang xem
    */
-  const calendarDays = useMemo<
-    CalendarDay[]
-  >(() => {
-    const year = today.getFullYear();
-    const month = today.getMonth();
+  const calendarDays = useMemo<CalendarDay[]>(() => {
+    const year = currentYear;
+    const month = currentMonth;
 
-    const firstDay = new Date(
-      year,
-      month,
-      1,
-    );
-
-    const lastDay = new Date(
-      year,
-      month + 1,
-      0,
-    );
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
 
     const days: CalendarDay[] = [];
 
-    /**
-     * JS:
-     *
-     * Sunday = 0
-     * Monday = 1
-     * ...
-     * Saturday = 6
-     *
-     * Chuyển về:
-     *
-     * Monday = 0
-     * ...
-     * Sunday = 6
-     */
+    // Monday = 0 ... Sunday = 6
     const firstDayOfWeek =
-      firstDay.getDay() === 0
-        ? 6
-        : firstDay.getDay() - 1;
+      firstDay.getDay() === 0 ? 6 : firstDay.getDay() - 1;
 
-    /**
-     * Previous month
-     */
-    for (
-      let i = firstDayOfWeek - 1;
-      i >= 0;
-      i--
-    ) {
-      const date = new Date(
-        year,
-        month,
-        -i,
-      );
-
-      days.push({
-        date,
-        isCurrentMonth: false,
-      });
+    // Tháng trước
+    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+      days.push({ date: new Date(year, month, -i), isCurrentMonth: false });
     }
 
-    /**
-     * Current month
-     */
-    for (
-      let day = 1;
-      day <= lastDay.getDate();
-      day++
-    ) {
-      days.push({
-        date: new Date(
-          year,
-          month,
-          day,
-        ),
-        isCurrentMonth: true,
-      });
+    // Tháng hiện tại
+    for (let day = 1; day <= lastDay.getDate(); day++) {
+      days.push({ date: new Date(year, month, day), isCurrentMonth: true });
     }
 
-    /**
-     * Next month
-     *
-     * 42 = 6 tuần × 7 ngày
-     */
-    const remaining =
-      42 - days.length;
-
-    for (
-      let i = 1;
-      i <= remaining;
-      i++
-    ) {
-      days.push({
-        date: new Date(
-          year,
-          month + 1,
-          i,
-        ),
-        isCurrentMonth: false,
-      });
+    // Tháng sau (đủ 42 ô)
+    const remaining = 42 - days.length;
+    for (let i = 1; i <= remaining; i++) {
+      days.push({ date: new Date(year, month + 1, i), isCurrentMonth: false });
     }
 
     return days;
   }, [currentMonth, currentYear]);
 
-  /**
-   * =========================
-   * Loading
-   * =========================
-   */
-  const isLoading =
-    isSessionsLoading ||
-    isFamiliesLoading;
+  const isLoading = isSessionsLoading || isFamiliesLoading;
 
   if (isLoading) {
     return (
       <div className="flex min-h-[400px] items-center justify-center">
-        <p className="text-sm text-slate-500">
-          Đang tải dashboard...
-        </p>
+        <p className="text-sm text-slate-500">Đang tải dashboard...</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      {/* Statistics */}
-      <StatisticsCards
-        data={statistics}
-      />
+      {/* Month navigation */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-slate-800">
+          Tháng {currentMonth + 1}/{currentYear}
+        </h2>
 
-      {/* Family statistics */}
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={goPrevMonth}
+            aria-label="Tháng trước"
+            className="rounded-md border border-slate-200 p-2 hover:bg-slate-50"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+
+          <button
+            type="button"
+            onClick={goToday}
+            disabled={isViewingCurrentMonth}
+            className="rounded-md border border-slate-200 px-3 py-1.5 text-sm hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            Hôm nay
+          </button>
+
+          <button
+            type="button"
+            onClick={goNextMonth}
+            aria-label="Tháng sau"
+            className="rounded-md border border-slate-200 p-2 hover:bg-slate-50"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      <StatisticsCards data={statistics} />
+
       <FamilyStatisticsTable
         data={familyStatistics}
         onDelete={() => {}}
         onEdit={() => {}}
       />
 
-      {/* Calendar */}
       <Calendar
         sessions={calendarSessions}
         calendarDays={calendarDays}
@@ -350,4 +228,3 @@ const Dashboard = () => {
 };
 
 export default Dashboard;
-
